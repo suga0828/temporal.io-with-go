@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -11,8 +12,17 @@ import (
 
 // @@@SNIPSTART money-transfer-project-template-go-worker
 func main() {
+	// Get Temporal server address from environment variable or use default
+	temporalAddress := os.Getenv("TEMPORAL_ADDRESS")
+	if temporalAddress == "" {
+		temporalAddress = client.DefaultHostPort
+	}
+	
+	log.Printf("Connecting to Temporal server at: %s", temporalAddress)
 
-	c, err := client.Dial(client.Options{})
+	c, err := client.Dial(client.Options{
+		HostPort: temporalAddress,
+	})
 	if err != nil {
 		log.Fatalln("Unable to create Temporal client:", err)
 	}
@@ -29,7 +39,7 @@ func main() {
 	// Start listening to the Task Queue.
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
-		log.Fatalln("unable to start Worker", err)
+		log.Fatalln("Unable to start Worker", err)
 	}
 }
 

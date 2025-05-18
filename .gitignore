@@ -16,3 +16,9 @@
 
 # IDE dirs
 .idea/
+
+# Temporal database files
+*.db
+
+# Environment files
+.env

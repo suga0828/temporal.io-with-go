@@ -4,13 +4,31 @@
 #==============================================================================
 
 #------------------------------------------------------------------------------
-# Environment variables
+# Load environment variables from .env file if it exists
 #------------------------------------------------------------------------------
+ENV_FILE=".env"
+if [ -f "$ENV_FILE" ]; then
+  echo "Loading environment variables from $ENV_FILE"
+  source "$ENV_FILE"
+else
+  echo "Warning: $ENV_FILE file not found. Using default values."
+  # Copy the example file if it doesn't exist
+  if [ -f ".env.example" ] && [ ! -f "$ENV_FILE" ]; then
+    echo "Creating $ENV_FILE from .env.example"
+    cp .env.example "$ENV_FILE"
+    source "$ENV_FILE"
+  fi
+fi
+
+# Set defaults for required variables if not set in .env
 export TEMPORAL_UI_PORT=${TEMPORAL_UI_PORT:-8080}
 export TEMPORAL_PORT=${TEMPORAL_PORT:-7233}
 export TEMPORAL_DB_FILE=${TEMPORAL_DB_FILE:-"temporal.db"}
 export TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-"default"}
 export WORKFLOW_ID=${WORKFLOW_ID:-"money-transfer-workflow"}
+export TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-"localhost:${TEMPORAL_PORT}"}
+export WORKFLOW_TASK_QUEUE=${WORKFLOW_TASK_QUEUE:-"TRANSFER_MONEY_TASK_QUEUE"}
+export LOG_MODE=${LOG_MODE:-"development"}
 
 
 #------------------------------------------------------------------------------
@@ -81,7 +99,7 @@ start_worker() {
   fi
 
   echo "Starting Temporal worker..."
-  cd worker && TEMPORAL_ADDRESS="localhost:$TEMPORAL_PORT" go run main.go &
+  cd cmd/worker && go run main.go &
   WORKER_PID=$!
   echo "Worker started with PID: $WORKER_PID"
   
@@ -106,7 +124,7 @@ execute_workflow() {
   fi
 
   echo "Executing money transfer workflow with ID: $WORKFLOW_ID..."
-  cd start && TEMPORAL_ADDRESS="localhost:$TEMPORAL_PORT" WORKFLOW_ID="$WORKFLOW_ID" go run main.go
+  cd cmd/starter && go run main.go
   WORKFLOW_STATUS=$?
   
   if [ $WORKFLOW_STATUS -eq 0 ]; then
@@ -150,12 +168,13 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # Print configuration information
-echo "=== Temporal Money Transfer Application Setup ==="
+echo "=== Temporal Money Transfer Application Setup ===="
 echo "Temporal Service Port: $TEMPORAL_PORT"
 echo "UI Port: $TEMPORAL_UI_PORT"
 echo "Database File: $TEMPORAL_DB_FILE"
 echo "Namespace: $TEMPORAL_NAMESPACE"
 echo "Workflow ID: $WORKFLOW_ID"
+echo "Task Queue: $WORKFLOW_TASK_QUEUE"
 echo "=================================================="
 
 # Start components

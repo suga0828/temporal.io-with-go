@@ -6,7 +6,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	"money-transfer-project-template-go/app"
+	"temporal.io-with-go/app"
 )
 
 // @@@SNIPSTART money-transfer-project-template-go-worker
@@ -14,7 +14,7 @@ func main() {
 
 	c, err := client.Dial(client.Options{})
 	if err != nil {
-		log.Fatalln("Unable to create Temporal client.", err)
+		log.Fatalln("Unable to create Temporal client:", err)
 	}
 	defer c.Close()
 

@@ -6,7 +6,7 @@ import (
 
 	"go.temporal.io/sdk/client"
 
-	"money-transfer-project-template-go/app"
+	"temporal.io-with-go/app"
 )
 
 // @@@SNIPSTART money-transfer-project-template-go-start-workflow
